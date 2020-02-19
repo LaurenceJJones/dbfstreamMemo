@@ -96,7 +96,7 @@ const dataTypes = {
     return data.toLowerCase() === 't';
   },
   M(data) {
-    return memoFile.getBlockContentAt(data).replace(/[\u0000]+$/, '').trim();
+    return data !== 0 ? memoFile.getBlockContentAt(data).replace(/[\u0000]+$/, '').trim() : '';
   }
 };
 
