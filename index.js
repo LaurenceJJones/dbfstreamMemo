@@ -4,6 +4,9 @@ const util = require('util');
 const EventEmitter = require('events').EventEmitter;
 const Readable = require('stream').Readable;
 const isStream = require('is-stream');
+const MemoFile = require('memo_file');
+
+let memoFile;
 
 const fileTypes = {
   2: 'FoxBASE',
@@ -21,13 +24,13 @@ const fileTypes = {
   251: 'FoxBASE',
 };
 
-const parseFileType = (buffer) => fileTypes[buffer.readUInt8(0, true)]
-  ? fileTypes[buffer.readUInt8(0, true)]
-  : 'uknown';
+const parseFileType = (buffer) => fileTypes[buffer.readUInt8(0, true)] ?
+  fileTypes[buffer.readUInt8(0, true)] :
+  'uknown';
 
 const parseDate = (buffer) => new Date(
   buffer.readUInt8(0, true) + 1900, // year
-  buffer.readUInt8(1, true) - 1,  // month
+  buffer.readUInt8(1, true) - 1, // month
   buffer.readUInt8(2, true) // date
 );
 
@@ -58,16 +61,15 @@ const getHeader = (readStream) => {
 // 23	Value of autoincrement Step value
 // 24 – 31	Reserved
 const getField = (buffer) => (
-  buffer.length < 32
-    ? undefined
-    : {
-      name: buffer.toString('utf-8', 0, 11).replace(/[\u0000]+$/, ''),
-      type: buffer.toString('utf-8', 11, 12),
-      displacement: buffer.readInt32LE(12, true),
-      length: buffer.readUInt8(16, true),
-      decimalPlaces: buffer.readUInt8(17, true),
-      flag: buffer.readUInt8(18, true),
-    }
+  buffer.length < 32 ?
+  undefined : {
+    name: buffer.toString('utf-8', 0, 11).replace(/[\u0000]+$/, ''),
+    type: buffer.toString('utf-8', 11, 12),
+    displacement: buffer.readInt32LE(12, true),
+    length: buffer.readUInt8(16, true),
+    decimalPlaces: buffer.readUInt8(17, true),
+    flag: buffer.readUInt8(18, true),
+  }
 );
 
 const getListOfFields = (readStream, bytesOfHeader) => {
@@ -93,12 +95,15 @@ const dataTypes = {
   L(data) {
     return data.toLowerCase() === 't';
   },
+  M(data) {
+    return memoFile.getBlockContentAt(data);
+  }
 };
 
 const parseDataByType = (data, type) => (
-  dataTypes[type]
-    ? dataTypes[type](data)
-    : data  // default
+  dataTypes[type] ?
+  dataTypes[type](data) :
+  data // default
 );
 
 const convertToObject = (data, ListOfFields, encoding, numOfRecord) => {
@@ -111,7 +116,7 @@ const convertToObject = (data, ListOfFields, encoding, numOfRecord) => {
     const value = iconv
       .decode(data.slice(acc, acc + now.length), encoding)
       .replace(/^\s+|\s+$/g, '');
-    row[now.name] = parseDataByType(value, now.type);
+    row[now.name] = parseDataByType(now.type !== 'M' ? value : data.readInt32LE(acc, true), now.type);
     return acc + now.length;
   }, 1);
 
@@ -120,10 +125,15 @@ const convertToObject = (data, ListOfFields, encoding, numOfRecord) => {
 
 const dbfStream = (source, encoding = 'utf-8') => {
   util.inherits(Readable, EventEmitter);
-  const stream = new Readable({ objectMode: true });
+  const stream = new Readable({
+    objectMode: true
+  });
   // if source is already a readableStream, use it, otherwise treat as a filename
   const readStream = isStream.readable(source) ? source : fs.createReadStream(source);
-  let numOfRecord = 1;   //row number numOfRecord
+  // set memofile to new MemoFile (take source slice and add fpt)
+  memoFile = new MemoFile(source.slice(0, source.indexOf('.') + '.fpt'));
+
+  let numOfRecord = 1; //row number numOfRecord
 
   const onData = () => {
     if (stream.header) {
@@ -141,8 +151,7 @@ const dbfStream = (source, encoding = 'utf-8') => {
       stream.header = getHeader(readStream);
       stream.header.listOfFields = getListOfFields(readStream, stream.header.bytesOfHeader);
       stream.emit('header', stream.header);
-    }
-    catch (err) {
+    } catch (err) {
       stream.emit('error', err);
     }
   });
