@@ -116,7 +116,12 @@ const convertToObject = (data, ListOfFields, encoding, numOfRecord) => {
     const value = iconv
       .decode(data.slice(acc, acc + now.length), encoding)
       .replace(/^\s+|\s+$/g, '');
-    row[now.name] = parseDataByType(now.type !== 'M' ? value : data.readInt32LE(acc, true), now.type);
+    try {
+      row[now.name] = parseDataByType(now.type !== 'M' ? value : data.readInt32LE(acc, true), now.type);
+    } catch (error) {
+      //if error on buffer most likely set buffer to result 0 //temp fix//
+      row[now.name] = parseDataByType(now.type !== 'M' ? value : 0, now.type);
+    }
     return acc + now.length;
   }, 1);
 
