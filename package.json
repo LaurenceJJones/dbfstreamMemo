@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MichaelQQ/dbfstream.git"
+    "url": "git+https://github.com/LaurenceJJones/dbfstreamMemo.git"
   },
   "keywords": [
     "dbf",
@@ -17,9 +17,9 @@
   "author": "MichaelQQ",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/MichaelQQ/dbfstream/issues"
+    "url": "https://github.com/LaurenceJJones/dbfstreamMemo/issues"
   },
-  "homepage": "https://github.com/MichaelQQ/dbfstream#readme",
+  "homepage": "https://github.com/LaurenceJJones/dbfstreamMemo#readme",
   "dependencies": {
     "iconv-lite": "^0.4.13",
     "is-stream": "^1.1.0",
