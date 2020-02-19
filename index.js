@@ -131,7 +131,7 @@ const dbfStream = (source, encoding = 'utf-8') => {
   // if source is already a readableStream, use it, otherwise treat as a filename
   const readStream = isStream.readable(source) ? source : fs.createReadStream(source);
   // set memofile to new MemoFile (take source slice and add fpt)
-  memoFile = new MemoFile(source.slice(0, source.indexOf('.') + '.fpt'));
+  memoFile = new MemoFile(source.slice(0, source.indexOf('.')) + '.fpt');
 
   let numOfRecord = 1; //row number numOfRecord
 
