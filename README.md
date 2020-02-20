@@ -16,10 +16,10 @@ Based on https://github.com/tamtakoe/node-dbf
 ### creat dbf stream:
 
 @source: dbf file path / readable stream
-`const dbf = dbfstreammemo(source, encoding);`
+`const dbf = dbfstream(source, encoding);`
 
 ```js
-const dbfstream = require('dbfstream');
+const dbfstream = require('dbfstreammemo');
 
 var dbf = dbfstream('./test.dbf', 'utf-8');
 ```
