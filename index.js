@@ -7,6 +7,7 @@ const isStream = require('is-stream');
 const MemoFile = require('memo_file');
 
 let memoFile;
+let stream;
 
 const fileTypes = {
   2: 'FoxBASE',
@@ -96,7 +97,7 @@ const dataTypes = {
     return data.toLowerCase() === 't';
   },
   M(data) {
-    return data !== 0 ? memoFile.getBlockContentAt(data).replace(/[\u0000]+$/, '').trim() : '';
+    return data !== 0 ? memoFile.getBlockContentAt(parseInt(data)).replace(/[\u0000]+$/, '').trim() : '';
   }
 };
 
@@ -117,10 +118,11 @@ const convertToObject = (data, ListOfFields, encoding, numOfRecord) => {
       .decode(data.slice(acc, acc + now.length), encoding)
       .replace(/^\s+|\s+$/g, '');
     try {
-      row[now.name] = parseDataByType(now.type !== 'M' ? value : data.readInt32LE(acc, true), now.type);
+      // Added test of now.length to try to catch sometimes when the memo field can be a string with ten length
+      row[now.name] = parseDataByType(now.type !== 'M' && now.length !== 4 ? value.replace(/[\u0000]+$/, '').trim() : data.readInt32LE(acc, true), now.type);
     } catch (error) {
       //if error on buffer most likely set buffer to result 0 //temp fix//
-      row[now.name] = parseDataByType(now.type !== 'M' ? value : 0, now.type);
+      row[now.name] = parseDataByType(now.type !== 'M' && now.length === 4 ? value.replace(/[\u0000]+$/, '').trim() : 0, now.type);
     }
     return acc + now.length;
   }, 1);
@@ -130,7 +132,7 @@ const convertToObject = (data, ListOfFields, encoding, numOfRecord) => {
 
 const dbfStream = (source, encoding = 'utf-8') => {
   util.inherits(Readable, EventEmitter);
-  const stream = new Readable({
+  stream = new Readable({
     objectMode: true
   });
   // if source is already a readableStream, use it, otherwise treat as a filename
