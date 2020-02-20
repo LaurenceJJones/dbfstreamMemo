@@ -16,7 +16,7 @@ Based on https://github.com/tamtakoe/node-dbf
 ### creat dbf stream:
 
 @source: dbf file path / readable stream
-`const dbf = dbfstream(source, encoding);`
+`const dbf = dbfstreammemo(source, encoding);`
 
 ```js
 const dbfstream = require('dbfstream');
