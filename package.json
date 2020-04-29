@@ -1,6 +1,6 @@
 {
   "name": "dbfstreammemo",
-  "version": "1.0.27",
+  "version": "1.0.28",
   "description": "a dbf parser - stream version (based on https://github.com/tamtakoe/node-dbf) with add memo support for type 48",
   "main": "index.js",
   "scripts": {
