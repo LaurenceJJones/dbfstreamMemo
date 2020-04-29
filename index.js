@@ -120,7 +120,8 @@ const convertToObject = (data, ListOfFields, encoding, numOfRecord) => {
     try {
       // Added test of now.length to try to catch sometimes when the memo field can be a string with ten length
       row[now.name] = parseDataByType(now.type !== 'M' && now.length !== 4 ? value.replace(/[\u0000]+$/, '').trim() : data.readInt32LE(acc, true), now.type);
-    } catch (error) {
+    } catch (err) {
+      stream.emit('error', err);
       //if error on buffer most likely set buffer to result 0 //temp fix//
       row[now.name] = parseDataByType(now.type !== 'M' && now.length === 4 ? value.replace(/[\u0000]+$/, '').trim() : 0, now.type);
     }
@@ -138,7 +139,8 @@ const dbfStream = (source, encoding = 'utf-8') => {
   // if source is already a readableStream, use it, otherwise treat as a filename
   const readStream = isStream.readable(source) ? source : fs.createReadStream(source);
   // set memofile to new MemoFile (take source slice and add fpt)
-  memoFile = new MemoFile(source.slice(0, source.indexOf('.')) + '.fpt');
+  let path = `${source.slice(0, source.indexOf('.'))}.fpt`;
+  fs.existsSync(path) ? memoFile = new MemoFile(path) : memoFile = null;
 
   let numOfRecord = 1; //row number numOfRecord
 
