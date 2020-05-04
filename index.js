@@ -6,7 +6,7 @@ const Readable = require('stream').Readable;
 const isStream = require('is-stream');
 const MemoFile = require('memo_file');
 
-let memoFile;
+let memoFile = null;
 let stream;
 
 const fileTypes = {
@@ -140,7 +140,7 @@ const dbfStream = (source, encoding = 'utf-8') => {
   const readStream = isStream.readable(source) ? source : fs.createReadStream(source);
   // set memofile to new MemoFile (take source slice and add fpt)
   let path = `${source.slice(0, source.indexOf('.'))}.fpt`;
-  fs.existsSync(path) ? memoFile = new MemoFile(path) : memoFile = null;
+  fs.existsSync(path) ? memoFile = new MemoFile(path) : stream.emit('error', `No FPT found at ${path}`);
 
   let numOfRecord = 1; //row number numOfRecord
 
