@@ -6,7 +6,7 @@ const Readable = require('stream').Readable;
 const isStream = require('is-stream');
 const MemoFile = require('memo_file');
 
-let memoFile = null;
+let memoFile;
 let stream;
 
 const fileTypes = {
