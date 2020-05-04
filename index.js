@@ -97,7 +97,12 @@ const dataTypes = {
     return data.toLowerCase() === 't';
   },
   M(data) {
-    return data !== 0 && memoFile !== null ? memoFile.getBlockContentAt(parseInt(data)).replace(/[\u0000]+$/, '').trim() : '';
+    try {
+      return data !== 0 && memoFile !== null ? memoFile.getBlockContentAt(parseInt(data)).replace(/[\u0000]+$/, '').trim() : '';
+    }catch(err){
+      stream.emit('error', err);
+      return '';
+    }
   }
 };
 
@@ -142,7 +147,7 @@ const dbfStream = (source, encoding = 'utf-8') => {
   let path = `${source.slice(0, source.indexOf('.'))}.fpt`;
   try {
     memoFile = new MemoFile(path)
-  }catch(error){
+  }catch(err){
     memoFile = null;
     fs.existsSync(path) ? stream.emit('error', `FPT found at ${path} but failed to load`) : stream.emit('error', `No FPT found at ${path}`)
   }
