@@ -145,12 +145,18 @@ const dbfStream = (source, encoding = 'utf-8') => {
   const readStream = isStream.readable(source) ? source : fs.createReadStream(source);
   // set memofile to new MemoFile (take source slice and add fpt)
   let path = `${source.slice(0, source.indexOf('.'))}.fpt`;
-  try {
-    memoFile = new MemoFile(path)
-  }catch(err){
-    memoFile = null;
-    fs.existsSync(path) ? stream.emit('error', `FPT found at ${path} but failed to load`) : stream.emit('error', `No FPT found at ${path}`)
-  }
+  fs.access(path, fs.constants.F_OK, (err) => {
+    if (err){
+      stream.emit('error', `No FPT found at ${path}`)
+      return;
+    }
+    try {
+      memoFile = new MemoFile(path)
+    }catch(err){
+      memoFile = null;
+      stream.emit('error', `FPT found at ${path} but failed to load`)
+    }
+  });
 
 
   let numOfRecord = 1; //row number numOfRecord
