@@ -140,7 +140,11 @@ const dbfStream = (source, encoding = 'utf-8') => {
   const readStream = isStream.readable(source) ? source : fs.createReadStream(source);
   // set memofile to new MemoFile (take source slice and add fpt)
   let path = `${source.slice(0, source.indexOf('.'))}.fpt`;
-  fs.existsSync(path) ? memoFile = new MemoFile(path) : stream.emit('error', `No FPT found at ${path}`);
+  if (fs.existsSync(path)){
+    memoFile = new MemoFile(path)
+  }else { 
+    stream.emit('error', `No FPT found at ${path}`)
+  }
 
   let numOfRecord = 1; //row number numOfRecord
 
