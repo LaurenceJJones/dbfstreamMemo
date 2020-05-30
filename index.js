@@ -141,10 +141,14 @@ const dbfStream = (source, encoding = 'utf-8') => {
   stream = new Readable({
     objectMode: true
   });
+  // check if source is stream
+  const isReadable = isStream.readable(source)
   // if source is already a readableStream, use it, otherwise treat as a filename
-  const readStream = isStream.readable(source) ? source : fs.createReadStream(source);
-  // set memofile to new MemoFile (take source slice and add fpt)
-  let path = `${source.slice(0, source.indexOf('.'))}.fpt`;
+  const readStream = isReadable  ? source : fs.createReadStream(source);
+  const filePath = isReadable ? source.path : source;
+  
+  let path = `${filePath.slice(0, filePath.indexOf('.'))}.fpt`;
+  // check if path fpt exists if not throw err else try read
   fs.access(path, fs.constants.F_OK, (err) => {
     if (err){
       stream.emit('error', `No FPT found at ${path}`)
