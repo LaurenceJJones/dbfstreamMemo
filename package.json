@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/LaurenceJJones/dbfstreamMemo#readme",
   "dependencies": {
-    "iconv-lite": "^0.4.13",
+    "iconv-lite": "^0.6.3",
     "is-stream": "^1.1.0",
     "memo_file": "^1.1.0"
   },
